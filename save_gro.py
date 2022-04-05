@@ -2,6 +2,7 @@
 """Extend pymol save command to save gro files"""
 from pymol import cmd
 from pathlib import Path
+import functools
 
 
 class Atom:
@@ -56,42 +57,11 @@ class Structure:
 
 
 @cmd.extend
-def save(filename: str, selection='(all)', state=-1, format='',
-         ref_state=-1, quiet=1, partial=0, *, _self=cmd, **kwargs):
-    """DESCRIPTION
-    "save" writes content to a file.
-    Extended to save gro files.
-
-    USAGE
-        save filename [, selection [, state [, format ]]]
-    ARGUMENTS
-        filename = string: file path to be written
-        selection = string: atoms to save {default: (all)}
-        state = integer: state to save {default: -1 (current state)}
-
-    PYMOL API
-        cmd.save(string file, string selection, int state, string format)
-    NOTES
-        The file format is automatically chosen if the extension is one of
-        the supported output formats: gro, pdb, pqr, mol, sdf, pkl, pkla, mmd, out,
-        dat, mmod, cif, pov, png, pse, psw, aln, fasta, obj, mtl, wrl, dae, idtf,
-        or mol2.
-        If the file format is not recognized, then a PDB file is written
-        by default.
-        For molecular files and where applicable and supported:
-
-        * if state = -1 (default), then only the current state is written.
-        * if state = 0, then a multi-state output file is written.
-
-    SEE ALSO
-        load, get_model
-
-    """
+@functools.wraps(cmd.save)
+def save(filename, *args, selection='(all)', quiet=1, **kwargs):
     if Path(filename).suffix != ".gro":
         # Fall back to api save
-        _locals = locals()
-        _locals.pop('kwargs')
-        return cmd.save(**_locals, **kwargs)
+        return cmd.save(**locals())
 
     model = cmd.get_model(selection)
     structure = Structure.from_model(model)
@@ -107,3 +77,6 @@ def save(filename: str, selection='(all)', state=-1, format='',
 
     if quiet == 0:
         print(f' Save: wrote "{filename}".')
+
+
+save.__doc__ += "\n* Extended to save gro files."
