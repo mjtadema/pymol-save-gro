@@ -58,17 +58,17 @@ class Structure:
 
 @cmd.extend
 @functools.wraps(cmd.save)
-def save(filename, selection='(all)', quiet=1, _self=cmd, **kwargs):
+def save(filename, selection='(all)', state=0, quiet=1, _self=cmd, **kwargs):
     if Path(filename).suffix != ".gro":
         # Fall back to api save
         _locals = locals()
         _locals.pop('kwargs')
         return cmd.save(**_locals, **kwargs)
 
-    model = _self.get_model(selection)
+    model = _self.get_model(selection, state)
     structure = Structure.from_model(model)
     atoms = structure.to_str()
-    box = parse_cryst(_self.get_symmetry())
+    box = parse_cryst(_self.get_symmetry(selection))
     natoms = f"\n{len(structure.atoms)}"
 
     with open(filename, 'w') as f:
