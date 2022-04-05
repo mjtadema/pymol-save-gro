@@ -76,6 +76,7 @@ def save(filename, selection='(all)', quiet=1, _self=cmd, **kwargs):
         f.write(natoms)
         f.writelines(atoms)
         f.write(box)
+        f.write("\n")
 
     if quiet == 0:
         print(f' Save: wrote "{filename}".')
